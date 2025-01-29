@@ -1,9 +1,8 @@
 package provider
 
 import (
-	"reflect"
-	"runtime"
-	"strings"
+	"github.com/gomdori-foo/bear-den/internal/core/common"
+	"github.com/gomdori-foo/bear-den/internal/core/utils"
 )
 
 // Object used when using a provider in the application.
@@ -16,26 +15,22 @@ type Provider struct {
 type ProviderFactory struct {
 	providerType interface{}
 	constructor interface{}
-	options *ProviderFactoryOptions
+	options ProviderFactoryOptions
 }
 
 // Object used when creating a provider.
-type ProviderConstructor struct {
+type ProviderFactoryAs struct {
 	constructor interface{}
 }
 
 // Object used when creating a provider.
 type ProviderFactoryOptions struct {
-	scope ProviderScope
+	scope common.Scope
 }
 
-type ProviderScope string
-
-const (
-	ScopeDefault ProviderScope = "DEFAULT"
-	ScopeTransient ProviderScope = "TRANSIENT"
-	ScopeRequest ProviderScope = "REQUEST"
-)
+type ProviderFactoryWith struct {
+	options ProviderFactoryOptions
+}
 
 func Providers(constructors ...interface{}) []*ProviderFactory {
 	providerFactories := make([]*ProviderFactory, len(constructors))
@@ -43,7 +38,7 @@ func Providers(constructors ...interface{}) []*ProviderFactory {
 	for i, constructor := range constructors {
 		if providerFactory, ok := constructor.(*ProviderFactory); ok {
 			providerFactories[i] = providerFactory
-		} else if isConstructor(constructor) {
+		} else if utils.IsConstructor(constructor) {
 			providerFactories[i] = &ProviderFactory{
 				providerType: constructor,
 				constructor: constructor,
@@ -58,18 +53,18 @@ func Providers(constructors ...interface{}) []*ProviderFactory {
 }
 
 
-func Use(providerType interface{}, providerConstructor *ProviderConstructor, providerFactoryOptions ...*ProviderFactoryOptions) *ProviderFactory {
-	if providerConstructor == nil {
+func Use(providerType interface{}, as *ProviderFactoryAs, args ...*ProviderFactoryWith) *ProviderFactory {
+	if as == nil {
 		panic("provider constructor is required")
 	}
 
-	constructor := providerConstructor.constructor
+	constructor := as.constructor
 
 	options := NewDefaultOptions()
 
-	if len(providerFactoryOptions) > 0 {
-		customOptions := providerFactoryOptions[0]
-		options.scope = customOptions.scope
+	if len(args) > 0 {
+		with := args[0]
+		options.scope = with.options.scope
 	}
 
 	return &ProviderFactory{
@@ -80,35 +75,26 @@ func Use(providerType interface{}, providerConstructor *ProviderConstructor, pro
 }
 
 // Used when receiving an implementation for an interface
-func As(constructor interface{}) *ProviderConstructor {
-	if !isConstructor(constructor) {
+func As(constructor interface{}) *ProviderFactoryAs {
+	if !utils.IsConstructor(constructor) {
 		panic("invalid provider constructor")	
 	} 
 
-	return &ProviderConstructor{
+	return &ProviderFactoryAs{
 		constructor: constructor,
 	}
 }
 
 // Will be used in the future
-func With(options *ProviderFactoryOptions) *ProviderFactoryOptions {
-	return options
-}
-
-func isConstructor(constructor interface{}) bool {
-	constructorType := reflect.TypeOf(constructor)
-	constructorValue := reflect.ValueOf(constructor)
-	constructorName := runtime.FuncForPC(constructorValue.Pointer()).Name()
-
-	if lastDot := strings.LastIndex(constructorName, "."); lastDot >= 0 {
-		constructorName = constructorName[lastDot+1:]
+func With(options ProviderFactoryOptions) *ProviderFactoryWith {
+	return &ProviderFactoryWith{
+		options: options,
 	}
-
-	return constructorType.Kind() == reflect.Func && strings.HasPrefix(constructorName, "New")
 }
 
-func NewDefaultOptions() *ProviderFactoryOptions {
-	return &ProviderFactoryOptions{
-		scope: ScopeDefault,
+
+func NewDefaultOptions() ProviderFactoryOptions {
+	return ProviderFactoryOptions{
+		scope: common.ScopeDefault,
 	}
 }

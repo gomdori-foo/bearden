@@ -3,6 +3,7 @@ package provider
 import (
 	"testing"
 
+	"github.com/gomdori-foo/bear-den/internal/core/common"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,7 +26,7 @@ func TestProviders(t *testing.T) {
 		assert.Equal(t, len(providers), 1, "expected 1 provider")
 		
 		for _, provider := range providers {
-			assert.Equal(t, provider.options.scope, ScopeDefault, "expected scope to be default")
+			assert.Equal(t, provider.options.scope, common.ScopeDefault, "expected scope to be default")
 		}
 	})
 
@@ -41,7 +42,23 @@ func TestProviders(t *testing.T) {
 		assert.Equal(t, len(providers), 1, "expected 1 provider")
 
 		for _, provider := range providers {
-			assert.Equal(t, provider.options.scope, ScopeDefault, "expected scope to be default")
+			assert.Equal(t, provider.options.scope, common.ScopeDefault, "expected scope to be default")
+		}
+	})
+
+	t.Run("should create provider factories from interface, constructor and options", func(t *testing.T) {
+		// given
+
+		// when 
+		providers := Providers(
+			Use(new(TestInterface), As(NewTestService), With(ProviderFactoryOptions{ scope: common.ScopeRequest })),
+		)
+
+		// then
+		assert.Equal(t, len(providers), 1, "expected 1 provider")
+
+		for _, provider := range providers {
+			assert.Equal(t, provider.options.scope, common.ScopeRequest, "expected scope to be request")
 		}
 	})
 }
