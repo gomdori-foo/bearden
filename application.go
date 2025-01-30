@@ -1,4 +1,4 @@
-package application
+package bearden
 
 type BearDenApplication struct {}
 
