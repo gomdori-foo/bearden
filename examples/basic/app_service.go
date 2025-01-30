@@ -2,7 +2,6 @@ package main
 
 type AppService struct {}
 
-// @Injectable()
 func NewAppService() *AppService {
 	return &AppService{}
 }

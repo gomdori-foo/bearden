@@ -8,17 +8,20 @@ import (
 type Module struct {
 	controllers []*controller.Controller
 	providers []*provider.Provider
+	exports []*provider.Provider
 }
 
+type ModuleFactoryConstructor func() *ModuleFactory
+
 type ModuleFactory struct {
-	imports []func() *ModuleFactory
+	imports []ModuleFactoryConstructor
 	providers []*provider.ProviderFactory
 	controllers []*controller.ControllerFactory
 	exports []interface{}
 }
 
 type ModuleFactoryBuilder struct {
-	imports []func() *ModuleFactory
+	imports []ModuleFactoryConstructor
 	providers []*provider.ProviderFactory
 	controllers []*controller.ControllerFactory
 	exports []interface{}
@@ -28,7 +31,7 @@ func Builder() *ModuleFactoryBuilder {
 	return &ModuleFactoryBuilder{}
 }
 
-func (m *ModuleFactoryBuilder) Imports(constructors ...func() *ModuleFactory) *ModuleFactoryBuilder {
+func (m *ModuleFactoryBuilder) Imports(constructors ...ModuleFactoryConstructor) *ModuleFactoryBuilder {
 	m.imports = append(m.imports, constructors...)
 	return m
 }
@@ -58,4 +61,41 @@ func (m *ModuleFactoryBuilder) Build() *ModuleFactory {
 		exports: m.exports,
 	}
 }
-	
+
+// Module Factory
+func (m *ModuleFactory) Imports() []ModuleFactoryConstructor {
+	return m.imports
+}
+
+func (m *ModuleFactory) Providers() []*provider.ProviderFactory {
+	return m.providers
+}
+
+func (m *ModuleFactory) Controllers() []*controller.ControllerFactory {
+	return m.controllers
+}
+
+func (m *ModuleFactory) Exports() []interface{} {
+	return m.exports
+}
+
+// Module
+func (m *Module) AppendProviders(providers ...*provider.Provider) {
+	m.providers = append(m.providers, providers...)
+}
+
+func (m *Module) AppendControllers(controllers ...*controller.Controller) {
+	m.controllers = append(m.controllers, controllers...)
+}
+
+func (m *Module) AppendExports(exports ...*provider.Provider) {
+	m.exports = append(m.exports, exports...)
+}
+
+func (m *Module) Providers() []*provider.Provider {
+	return m.providers
+}
+
+func (m *Module) Exports() []*provider.Provider {
+	return m.exports
+}

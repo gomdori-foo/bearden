@@ -1,15 +1,11 @@
 package provider
 
 import (
+	"reflect"
+
 	"github.com/gomdori-foo/bearden/internal/core/common"
 	"github.com/gomdori-foo/bearden/internal/core/utils"
 )
-
-// Object used when using a provider in the application.
-type Provider struct {
-	providerType interface{}
-	constructor func() interface{}
-}
 
 // Object used when creating a provider.
 type ProviderFactory struct {
@@ -97,4 +93,71 @@ func NewDefaultOptions() ProviderFactoryOptions {
 	return ProviderFactoryOptions{
 		scope: common.ScopeDefault,
 	}
+}
+
+func (p *ProviderFactory) Create(providers []*Provider) *Provider {
+	constructorType := reflect.TypeOf(p.constructor)
+	if constructorType.Kind() != reflect.Func {
+		panic("provider constructor is not a function")
+	}
+
+	provider := FindProvider(providers, constructorType)
+	if provider != nil {
+		return provider
+	}
+
+	params := make([]interface{}, constructorType.NumIn())
+
+	for i := 0; i < len(params); i++ {
+		paramType := constructorType.In(i)
+		provider := FindProvider(providers, paramType)
+		if provider == nil {
+			return nil
+		}
+
+		params[i] = provider.Instance()
+	}
+
+
+	constructor := func() interface{} {
+		constructorValue := reflect.ValueOf(p.constructor)
+		paramValues := make([]reflect.Value, len(params))
+		for i, param := range params {
+			paramValues[i] = reflect.ValueOf(param)
+		}
+		result := constructorValue.Call(paramValues)[0].Interface()
+		return result
+	}
+
+	options := NewProviderOptions(p.options.scope)
+
+	provider = NewProvider(p.providerType, constructor, options)
+
+	return provider
+}
+
+func (p *ProviderFactory) FindProvider(providers []*Provider) *Provider {
+	constructorType := reflect.TypeOf(p.constructor)
+	return FindProvider(providers, constructorType)
+}
+
+func FindProvider(providers []*Provider, reflectType reflect.Type) *Provider {
+	for _, provider := range providers {
+		providerType := reflect.TypeOf(provider.providerType)
+
+		if providerType.Kind() == reflect.Ptr {
+			providerType = providerType.Elem()
+		}
+	
+		compareType := reflectType
+		if reflectType.Kind() == reflect.Ptr {
+			compareType = reflectType.Elem()
+		}
+
+		if providerType == compareType {
+			return provider
+		}
+	}
+
+	return nil
 }
