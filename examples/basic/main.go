@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/gomdori-foo/bearden/factory"
+	"github.com/gomdori-foo/bearden"
 )
 
 func main() {
-	app := factory.Create(NewAppModule)
+	app := bearden.Create(NewAppModule)
 	app.Listen(":8080")
 }
