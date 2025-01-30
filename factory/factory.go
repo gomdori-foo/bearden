@@ -1,7 +1,10 @@
 package factory
 
-import "github.com/gomdori-foo/bear-den/internal/core/application"
+import (
+	application "github.com/gomdori-foo/bear-den"
+	"github.com/gomdori-foo/bear-den/internal/core/module"
+)
 
-func Create() *application.Application {
-	return &application.Application{}
+func Create(constructor func() *module.ModuleFactory) *application.BearDenApplication {
+	return &application.BearDenApplication{}
 }
