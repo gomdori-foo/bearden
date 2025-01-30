@@ -1,5 +1,5 @@
 package bearden
 
-import "github.com/gomdori-foo/bear-den/internal/core/module"
+import "github.com/gomdori-foo/bearden/internal/core/module"
 
 type Module = module.ModuleFactory

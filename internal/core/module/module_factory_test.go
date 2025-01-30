@@ -3,7 +3,7 @@ package module
 import (
 	"testing"
 
-	"github.com/gomdori-foo/bear-den/internal/core/provider"
+	"github.com/gomdori-foo/bearden/internal/core/provider"
 	"github.com/stretchr/testify/assert"
 )
 

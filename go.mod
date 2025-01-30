@@ -1,4 +1,4 @@
-module github.com/gomdori-foo/bear-den
+module github.com/gomdori-foo/bearden
 
 go 1.23.4
 

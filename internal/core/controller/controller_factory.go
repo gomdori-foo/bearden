@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"github.com/gomdori-foo/bear-den/internal/core/common"
-	"github.com/gomdori-foo/bear-den/internal/core/utils"
+	"github.com/gomdori-foo/bearden/internal/core/common"
+	"github.com/gomdori-foo/bearden/internal/core/utils"
 )
 
 type Controller struct {

@@ -1,8 +1,8 @@
 package module
 
 import (
-	"github.com/gomdori-foo/bear-den/internal/core/controller"
-	"github.com/gomdori-foo/bear-den/internal/core/provider"
+	"github.com/gomdori-foo/bearden/internal/core/controller"
+	"github.com/gomdori-foo/bearden/internal/core/provider"
 )
 
 type Module struct {

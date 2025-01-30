@@ -3,7 +3,7 @@ package controller
 import (
 	"testing"
 
-	"github.com/gomdori-foo/bear-den/internal/core/common"
+	"github.com/gomdori-foo/bearden/internal/core/common"
 	"github.com/stretchr/testify/assert"
 )	
 
