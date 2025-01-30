@@ -6,6 +6,7 @@ import (
 )
 
 type Module struct {
+	imports []*Module
 	controllers []*controller.Controller
 	providers []*provider.Provider
 	exports []*provider.Provider
@@ -80,6 +81,10 @@ func (m *ModuleFactory) Exports() []interface{} {
 }
 
 // Module
+func (m *Module) AppendImports(imports ...*Module) {
+	m.imports = append(m.imports, imports...)
+}
+
 func (m *Module) AppendProviders(providers ...*provider.Provider) {
 	m.providers = append(m.providers, providers...)
 }
@@ -92,8 +97,16 @@ func (m *Module) AppendExports(exports ...*provider.Provider) {
 	m.exports = append(m.exports, exports...)
 }
 
+func (m *Module) Imports() []*Module {
+	return m.imports
+}
+
 func (m *Module) Providers() []*provider.Provider {
 	return m.providers
+}
+
+func (m *Module) Controllers() []*controller.Controller {
+	return m.controllers
 }
 
 func (m *Module) Exports() []*provider.Provider {

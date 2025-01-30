@@ -9,7 +9,7 @@ import (
 
 // Object used when creating a provider.
 type ProviderFactory struct {
-	providerType interface{}
+	providerType reflect.Type
 	constructor interface{}
 	options ProviderFactoryOptions
 }
@@ -35,8 +35,13 @@ func Providers(constructors ...interface{}) []*ProviderFactory {
 		if providerFactory, ok := constructor.(*ProviderFactory); ok {
 			providerFactories[i] = providerFactory
 		} else if utils.IsConstructor(constructor) {
+			providerType := reflect.TypeOf(constructor).Out(0)
+			if providerType.Kind() == reflect.Ptr {
+				providerType = providerType.Elem()
+			}
+			
 			providerFactories[i] = &ProviderFactory{
-				providerType: constructor,
+				providerType: providerType,
 				constructor: constructor,
 				options: NewDefaultOptions(),
 			}
@@ -64,7 +69,7 @@ func Use(providerType interface{}, as *ProviderFactoryAs, args ...*ProviderFacto
 	}
 
 	return &ProviderFactory{
-		providerType: providerType,
+		providerType: reflect.TypeOf(providerType),
 		constructor: constructor,
 		options: options,
 	}
@@ -143,7 +148,7 @@ func (p *ProviderFactory) FindProvider(providers []*Provider) *Provider {
 
 func FindProvider(providers []*Provider, reflectType reflect.Type) *Provider {
 	for _, provider := range providers {
-		providerType := reflect.TypeOf(provider.providerType)
+		providerType := provider.providerType
 
 		if providerType.Kind() == reflect.Ptr {
 			providerType = providerType.Elem()

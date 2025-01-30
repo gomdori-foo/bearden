@@ -1,5 +1,11 @@
 package main
 
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
 type AppController struct {
 	appService AppService
 }
@@ -10,6 +16,9 @@ func NewAppController(appService AppService) *AppController {
 }
 
 // @Get()
-func (c *AppController) GetHello() string {
-	return c.appService.GetHello()
+func (c *AppController) GetHello(ctx *gin.Context) {
+	message := c.appService.GetHello()
+
+	ctx.JSON(http.StatusOK, gin.H{"message": message})
 }
+

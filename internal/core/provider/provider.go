@@ -1,10 +1,14 @@
 package provider
 
-import "github.com/gomdori-foo/bearden/internal/core/common"
+import (
+	"reflect"
+
+	"github.com/gomdori-foo/bearden/internal/core/common"
+)
 
 // Object used when using a provider in the application.
 type Provider struct {
-	providerType interface{}
+	providerType reflect.Type
 	constructor func() interface{}
 	instance interface{}
 	options ProviderOptions
@@ -14,7 +18,7 @@ type ProviderOptions struct {
 	scope common.Scope
 }
 
-func NewProvider(providerType interface{}, constructor func() interface{}, options ProviderOptions) *Provider {
+func NewProvider(providerType reflect.Type, constructor func() interface{}, options ProviderOptions) *Provider {
 	return &Provider{
 		providerType: providerType,
 		constructor: constructor,

@@ -94,7 +94,17 @@ func (c *ControllerFactory) Create(providers []*provider.Provider) *Controller {
 			return nil
 		}
 
-		params[i] = provider.Instance()
+		instance := provider.Instance()
+		instanceType := reflect.TypeOf(instance)
+		if paramType.Kind() == reflect.Ptr && instanceType.Kind() != reflect.Ptr {
+			val := reflect.New(instanceType)
+			val.Elem().Set(reflect.ValueOf(instance))
+			instance = val.Interface()
+		} else if paramType.Kind() != reflect.Ptr && instanceType.Kind() == reflect.Ptr {
+			instance = reflect.ValueOf(instance).Elem().Interface()
+		}
+
+		params[i] = instance
 	}
 
 	constructor := func() interface{} {
@@ -228,7 +238,7 @@ func getControllerRoutes(lines []string) ([]Route, error) {
 		} else if strings.HasPrefix(line, "func") {
 			handlerName = extractMethodName(line)
 
-			if method != "" && path != "" {
+			if method != "" {
 				route := NewRoute(method, path, handlerName)
 				routes = append(routes, route)
 			}
@@ -259,13 +269,13 @@ func getControllerPath(regex string, line string) (string, error) {
 			} else if (strings.HasSuffix(pathInQuotes[1], "/")) {
 				return pathInQuotes[1][:len(pathInQuotes[1])-1], nil
 			} else {
-				return "/" + pathInQuotes[1], nil
+				return pathInQuotes[1], nil
 			}
 		} else {
-			return "/", nil
+			return "", nil
 		}
 	} else {
-		return "/", nil
+		return "", nil
 	}
 }
 

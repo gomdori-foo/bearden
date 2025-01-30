@@ -51,6 +51,7 @@ func createSubModules(module *module.Module, moduleFactory *module.ModuleFactory
 	for _, moduleFactoryConstructor := range moduleFactory.Imports() {
 		moduleFactory := moduleFactoryConstructor()
 		generatedModule := createModule(moduleFactory)
+		module.AppendImports(generatedModule)
 		module.AppendProviders(generatedModule.Providers()...)
 
 		pc := reflect.ValueOf(moduleFactoryConstructor).Pointer()
@@ -66,7 +67,8 @@ func createProviders(module *module.Module, moduleFactory *module.ModuleFactory,
 	var retryProviderFactories []*provider.ProviderFactory
 
 	for _, providerFactory := range providerFactories {
-		provider := providerFactory.Create(module.Providers())
+		providers := module.Providers()
+		provider := providerFactory.Create(providers)
 		if provider == nil {
 			retryProviderFactories = append(retryProviderFactories, providerFactory)
 			continue
@@ -93,7 +95,8 @@ func createProviders(module *module.Module, moduleFactory *module.ModuleFactory,
 
 func createControllers(module *module.Module, controllerFactories []*controller.ControllerFactory) {
 	for _, controllerFactory := range controllerFactories {
-		controller := controllerFactory.Create(module.Providers())
+		providers := module.Providers()
+		controller := controllerFactory.Create(providers)
 		if controller == nil {
 			panic("Failed to generate controller")
 		}
